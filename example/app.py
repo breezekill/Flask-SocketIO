@@ -2,11 +2,12 @@
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
     close_room, rooms, disconnect
+import json
 
 # Set this variable to "threading", "eventlet" or "gevent" to test the
 # different async modes, or leave it set to None for the application to choose
 # the best option based on installed packages.
-async_mode = None
+async_mode = "gevent"
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -105,6 +106,13 @@ def test_connect():
 def test_disconnect():
     print('Client disconnected', request.sid)
 
+
+@app.route('/callback', methods=['GET'])
+def callback():
+    data = request.args.to_dict()
+    # print data
+    socketio.emit('my_response', {'data': data, 'count': 0}, namespace='/test')
+    return json.dumps(data)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
